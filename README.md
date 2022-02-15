@@ -57,12 +57,18 @@ releases.
 
 ## How to build a driver toolkit image from Red Hat UBI 8
 
+### Register to Red Hat
+
 The first step is to create a Red Hat account at https://access.redhat.com.
 Once connected, we're entitled to Red Hat Developer Subscription for
 Individuals, which allows us to register up to 16 machines.
 
-Then, we create an activation key at
-https://access.redhat.com/management/activation_keys/new:
+### Create an activation key
+
+Instead of passing our credentials, we can use an activation key that
+subscribes the system with Red Hat Subscription Manager and allows us to
+install/update packages on the machine. To create the activation key, we open
+https://access.redhat.com/management/activation_keys/new and fill the form:
 
 * Name: `driver-toolkit-builder`
 * Service Level: `Self Support`
@@ -71,18 +77,28 @@ https://access.redhat.com/management/activation_keys/new:
 
 On the Activation Keys page, note the Organization ID, e.g. `12345678`.
 
-We can now build the container image.
+### Retrieve pull secret
+
+The build process uses data from the `machine-os-content` of the OpenShift
+release that we target. It will require a pull secret to read the image from
+the private Quay.io registry. And that pull secret can be download from
+https://console.redhat.com/openshift/create/local, by clicking the _Download
+pull secret_ button. Let's store it in `${HOME}/.pull_secret`.
+
+### Build the container image
 
 Below is an example for building a driver toolkit image for the version
 `4.18.0-348.2.1.el8_5` of the kernel. We can see that we pass out Red Hat
 organization id and the name of the activation key that we created above.
 
 ```shell
+export OCP_VERSION=4.9.18
 podman build \
+    --build-arg OCP_VERSION=${OCP_VERSION} \
     --build-arg RHSM_ORG=12345678 \
     --build-arg RHSM_ACTIVATIONKEY=driver-toolkit-builder \
-    --build-arg KERNEL_VERSION=4.18.0-348.2.1.el8_5 \
-    --tag quay.io/fabiendupont/driver-toolkit-ubi8:4.18.0-348.2.1.el8_5 \
+    --volume ${HOME}/.pull_secret:/.docker/config.json \
+    --tag quay.io/fabiendupont/driver-toolkit-ubi8:${OCP_VERSION} \
     --file Dockerfile .
 ```
 
