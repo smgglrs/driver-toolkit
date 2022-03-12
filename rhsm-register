@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+RHSM_ORG=$(cat /run/secrets/RHSM_ORG)
+RHSM_ACTIVATIONKEY=$(cat /run/secrets/RHSM_ACTIVATIONKEY)
+subscription-manager register --name=driver-toolkit-builder --org=${RHSM_ORG} --activationkey=${RHSM_ACTIVATIONKEY}

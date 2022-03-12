@@ -1,22 +1,24 @@
-FROM registry.access.redhat.com/ubi8/ubi:8.5
+ARG RHEL_VERSION=''
+
+FROM registry.access.redhat.com/ubi8/ubi:${RHEL_VERSION}
 
 USER root
 
 ARG RHEL_VERSION=''
-ARG RHSM_ORG=''
-ARG RHSM_ACTIVATIONKEY=''
 ARG KERNEL_VERSION=''
 ARG RT_KERNEL_VERSION=''
 
+COPY ./rhsm-register /usr/local/bin/rhsm-register
+
 # Kernel packages needed to build drivers / kmod
-RUN rm /etc/rhsm-host \
-    && subscription-manager register \
-        --name=driver-toolkit-builder \
-	--org=${RHSM_ORG} --activationkey=${RHSM_ACTIVATIONKEY} \
+RUN --mount=type=secret,id=RHSM_ORG \
+    --mount=type=secret,id=RHSM_ACTIVATIONKEY \
+    rm /etc/rhsm-host \
+    && /usr/local/bin/rhsm-register \
     && subscription-manager repos \
         --enable rhel-8-for-x86_64-baseos-rpms \
-	--enable rhel-8-for-x86_64-appstream-rpms \
-	--enable=rhel-8-for-x86_64-baseos-eus-rpms \
+        --enable rhel-8-for-x86_64-appstream-rpms \
+        --enable=rhel-8-for-x86_64-baseos-eus-rpms \
     && echo "${RHEL_VERSION}" > /etc/dnf/vars/releasever \
     && dnf config-manager --best --nodocs --setopt=install_weak_deps=False --save \
     && dnf -y install \
@@ -35,15 +37,17 @@ RUN rm /etc/rhsm-host \
     && subscription-manager unregister \
     && useradd -u 1001 -m -s /bin/bash builder
 
-LABEL io.k8s.description="driver-toolkit is a container with the kernel packages necessary for building driver containers for deploying kernel modules/drivers on OpenShift" \
+LABEL io.k8s.description="Driver Toolkit provides the packages required to build driver containers for a specific version of RHEL 8 kernel" \
+      io.k8s.display-name="Driver Toolkit" \
+      maintainer="Smgglrs" \
       name="driver-toolkit" \
-      io.openshift.release.operator=true \
-      version="0.1"
+      vendor="Smgglrs" \
+      version="${KERNEL_VERSION}"
 
 # Last layer for metadata for mapping the driver-toolkit to a specific kernel version
 RUN export INSTALLED_KERNEL=$(rpm -q --qf "%{VERSION}-%{RELEASE}.%{ARCH}"  kernel-core); \
     export INSTALLED_RT_KERNEL=$(rpm -q --qf "%{VERSION}-%{RELEASE}.%{ARCH}"  kernel-rt-core); \
     echo "{ \"KERNEL_VERSION\": \"${INSTALLED_KERNEL}\", \"RT_KERNEL_VERSION\": \"${INSTALLED_RT_KERNEL}\", \"RHEL_VERSION\": \"${RHEL_VERSION}\" }" > /etc/driver-toolkit-release.json ; \
-    echo -e "KERNEL_VERSION=\"${INSTALLED_KERNEL}\"\nRT_KERNEL_VERSION="${INSTALLED_RT_KERNEL}\"\nRHEL_VERSION="${RHEL_VERSION}\"" > /etc/driver-toolkit-release.sh
+    echo -e "KERNEL_VERSION=\"${INSTALLED_KERNEL}\"\nRT_KERNEL_VERSION=\"${INSTALLED_RT_KERNEL}\"\nRHEL_VERSION=\"${RHEL_VERSION}\"" > /etc/driver-toolkit-release.sh
 
 USER builder
