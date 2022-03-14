@@ -10,7 +10,7 @@ echo "Generating matrix in ${MATRIX_FILE}"
 KVERS=()
 for y in $(seq 8 10); do
     for z in $(seq 0 99); do
-	for a in "x86_64" "aarch64"; do
+	for a in "x86_64"; do
             # Get the release image for the z-stream
 	    echo -n "Get the release image for OCP 4.${y}.${z}-${a}."
             IMG=$(oc adm release info --image-for=machine-os-content quay.io/openshift-release-dev/ocp-release:4.${y}.${z}-${a} 2>/dev/null)
@@ -59,9 +59,6 @@ for KVER_NOARCH in ${KVERS_NOARCH[@]}; do
 
     # Initialize the archs with x86_64" which is mandatory
     ARCHS="linux/amd64"
-
-    # Add aarch64 to the archs if a kernel for aarch64 is in the list
-    [[ " ${KVERS[*]} " =~ " ${KVER_NOARCH}.aarch64 " ]] && ARCHS="${ARCHS},linux/arm64"
 
     # Add a comma for all entries but the first one
     [ ${COUNT} -gt 0 ] && echo -n "," >> ${MATRIX_FILE}
