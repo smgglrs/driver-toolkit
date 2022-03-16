@@ -16,9 +16,9 @@ RUN --mount=type=secret,id=RHSM_ORG \
     rm /etc/rhsm-host \
     && /usr/local/bin/rhsm-register \
     && subscription-manager repos \
-        --enable rhel-8-for-x86_64-baseos-rpms \
-        --enable rhel-8-for-x86_64-appstream-rpms \
-        --enable=rhel-8-for-x86_64-baseos-eus-rpms \
+        --enable rhel-8-for-$(arch)-baseos-rpms \
+        --enable rhel-8-for-$(arch)-appstream-rpms \
+        --enable=rhel-8-for-$(arch)-baseos-eus-rpms \
     && echo "${RHEL_VERSION}" > /etc/dnf/vars/releasever \
     && dnf config-manager --best --nodocs --setopt=install_weak_deps=False --save \
     && dnf -y install \

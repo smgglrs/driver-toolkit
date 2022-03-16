@@ -35,6 +35,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
+      max-parallel: 4
+      fail-fast: false
     steps:
       - name: Check if driver-toolkit image exists for kernel ${{ matrix.versions.kernel }}
         id: get-image
