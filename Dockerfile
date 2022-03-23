@@ -1,12 +1,14 @@
 ARG RHEL_VERSION=''
+ARG BASE_DIGEST=''
 
-FROM registry.access.redhat.com/ubi8/ubi:${RHEL_VERSION}
-
-USER root
+FROM registry.access.redhat.com/ubi8/ubi@${BASE_DIGEST}
 
 ARG RHEL_VERSION=''
+ARG BASE_DIGEST=''
 ARG KERNEL_VERSION=''
 ARG RT_KERNEL_VERSION=''
+
+USER root
 
 COPY ./rhsm-register /usr/local/bin/rhsm-register
 
@@ -39,6 +41,9 @@ RUN --mount=type=secret,id=RHSM_ORG \
 
 LABEL io.k8s.description="Driver Toolkit provides the packages required to build driver containers for a specific version of RHEL 8 kernel" \
       io.k8s.display-name="Driver Toolkit" \
+      org.opencontainers.image.base.name="registry.access.redhat.com/ubi8/ubi" \
+      org.opencontainers.image.base.digest="${BASE_DIGEST}" \
+      org.opencontainers.source="https://github.com/smgglrs/driver-toolkit" \
       maintainer="Smgglrs" \
       name="driver-toolkit" \
       vendor="Smgglrs" \
