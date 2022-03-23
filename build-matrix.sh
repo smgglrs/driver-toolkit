@@ -57,15 +57,19 @@ for KVER_NOARCH in ${KVERS_NOARCH[@]}; do
     # Extract RHEL version from the kernel version
     RHEL_VERSION=$(echo ${KVER_NOARCH} | rev | cut -d "." -f 1 | rev | sed -e "s/^el//" -e "s/_/./")
 
-    # Initialize the archs with x86_64" which is mandatory
-    ARCHS="linux/amd64"
+    # Retrieve UBI image digest for RHEL version
+    UBI_DIGEST=$(oc image info -o json --filter-by-os "linux/amd64" registry.access.redhat.com/ubi8/ubi:${RHEL_VERSION} | jq .digest)
+
+    # Initialize the arch with "x86_64" which is mandatory
+    ARCH="linux/amd64"
+    ARCH_TAG="x86_64"
 
     # Add a comma for all entries but the first one
     [ ${COUNT} -gt 0 ] && echo -n "," >> ${MATRIX_FILE}
     ((COUNT++))
 
     # Generate the matrix entry for the kernel
-    echo -n " { \"rhel\": \"${RHEL_VERSION}\", \"kernel\": \"${KVER_NOARCH}\", \"archs\": \"${ARCHS}\" }" >> ${MATRIX_FILE}
+    echo -n " { \"rhel\": \"${RHEL_VERSION}\", \"ubi-digest\": ${UBI_DIGEST}, \"kernel\": \"${KVER_NOARCH}\", \"arch\": \"${ARCH}\", \"arch_tag\": \"${ARCH_TAG}\" }" >> ${MATRIX_FILE}
 done
 
 # Finalize the matrix file
