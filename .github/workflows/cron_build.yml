@@ -78,7 +78,7 @@ jobs:
         if: |
           steps.check-base-image-digest.outcome == 'failure' ||
           steps.check-existing-image.outcome == 'failure'
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
         if: |
