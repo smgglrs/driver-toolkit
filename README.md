@@ -94,12 +94,14 @@ organization id and the name of the activation key that we created above.
 ```shell
 export RHEL_VERSION=8.4
 export KERNEL_VERSION=4.18.0-305.40.1.el8_4
+export BASE_DIGEST=sha256:6f4f2ad88d7f6590d80e6cdeeddf9d9803e9df4648f9b5e0042927403ff2ec94
 podman build \
-    --secret id=RSHM_ORG,src=${HOME}/.rhsm_org \
-    --secret id=RSHM_ACTIVATIONKEY,src=${HOME}/.rhsm_activationkey \
+    --secret id=RHSM_ORG,src=${HOME}/.rhsm_org \
+    --secret id=RHSM_ACTIVATIONKEY,src=${HOME}/.rhsm_activationkey \
     --build-arg ARCH=x86_64 \
     --build-arg RHEL_VERSION=${RHEL_VERSION} \
-    --build-arg KERNEL_VERSION=${KERNEL_VERSION}
+    --build-arg KERNEL_VERSION=${KERNEL_VERSION} \
+    --build-arg BASE_DIGEST=${BASE_DIGEST} \
     --tag quay.io/smgglrs/driver-toolkit:${KERNEL_VERSION} \
     --file Dockerfile .
 ```
