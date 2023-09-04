@@ -17,7 +17,7 @@ jobs:
       matrix: ${{ steps.gen-matrix.outputs.matrix }}
     steps:
       - name: Checkout current repository to get the matrix file
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Generate the build matrix
         id: gen-matrix
@@ -63,7 +63,7 @@ jobs:
         if: |
           steps.check-base-image-digest.outcome == 'failure' ||
           steps.check-existing-image.outcome == 'failure'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Lint Dockerfile
         if: |
